@@ -29,4 +29,16 @@
     <string name="lx_source_summary">LegacyXperia is fully open source.\nSource at github.com/LegacyXperia</string>
     <string name="lx_donate_title">Donate</string>
     <string name="lx_donate_summary">Donate to LegacyXperia via PayPal</string>
+
+    <string name="bugreport_title">Bug report</string>
+
+    <string name="lx_bugreport_title">Collect all logs</string>
+    <string name="lx_bugreport_summary">Collect all the needed logs for bug reporting.</string>
+    <string name="report_infosuccess">Log collection was successful. You can find the zip file on your SD card in a directory called \"LX\". Please file an issue in the bug tracker and attach the zip.</string>
+    <string name="report_infofail">Log collection failed, please try again.</string>
+    <string name="lx_bugtracker_title">Bug tracker</string>
+    <string name="lx_bugtracker_summary">You can report any issues regarding the ROM here.</string>
+    <string name="ok">OK</string>
+    <string name="system_prop_error">Cannot read system properties</string>
+    <string name="sizer_message_sdnowrite">Cannot write to SD card</string>
 </resources>

@@ -25,6 +25,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import org.legacyxperia.center.About;
+import org.legacyxperia.center.BugReport;
 
 public class LegacyXperiaCenter extends FragmentActivity {
 
@@ -36,8 +37,8 @@ public class LegacyXperiaCenter extends FragmentActivity {
 
         @Override
         public int getCount() {
-            // Show 1 total pages.
-            return 1;
+            // Show 2 total pages.
+            return 2;
         }
 
         @Override
@@ -45,6 +46,8 @@ public class LegacyXperiaCenter extends FragmentActivity {
             switch (page) {
             case 0:
                 return new About();
+            case 1:
+                return new BugReport();
             }
             return null;
         }
@@ -55,6 +58,8 @@ public class LegacyXperiaCenter extends FragmentActivity {
             switch (position) {
                 case 0:
                     return getString(R.string.about_title).toUpperCase(l);
+                case 1:
+                    return getString(R.string.bugreport_title).toUpperCase(l);
             }
             return null;
         }
