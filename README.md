@@ -1,2 +1,4 @@
-android_packages_apps_LegacyXperiaCenter
-========================================
+LegacyXperia Center
+===================
+
+This application provides some useful things to LX users.
