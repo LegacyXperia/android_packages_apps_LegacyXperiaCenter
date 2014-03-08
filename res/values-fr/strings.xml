@@ -27,8 +27,8 @@
     <string name="lx_changelog_summary">Voir l'historique des modifications des builds LX</string>
     <string name="lx_source_title">Source</string>
     <string name="lx_source_summary">LegacyXperia est entièrement open source.\nSource sur github.com/LegacyXperia</string>
-    <string name="lx_donate_title">Donner</string>
-    <string name="lx_donate_summary">Donner à LegacyXperia via PayPal</string>
+    <string name="lx_donate_title">Faire un don</string>
+    <string name="lx_donate_summary">Faire un don à LegacyXperia via PayPal</string>
 
     <string name="bugreport_title">Rapport de bug</string>
 
@@ -40,5 +40,5 @@
 	<string name="lx_bugtracker_summary">Vous pouvez signaler toutes les issues liées à la ROM ici.</string>
     <string name="ok">OK</string>
     <string name="system_prop_error">Impossible de lire les propriétés du système</string>
-    <string name="sizer_message_sdnowrite">Impossible d'écrire sur la carte SD</string>
+    <string name="sizer_message_sdnowrite">Impossible d/'écrire sur la carte SD</string>
 </resources>
