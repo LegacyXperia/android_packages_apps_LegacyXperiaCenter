@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2014 LegacyXperia Project
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License version 2
+     as published by the Free Software Foundation.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+<resources>
+    <string name="app_name">Centre LegacyXperia</string>
+
+    <string name="about_title">À propos</string>
+
+    <string name="lx_website_title">Site LegacyXperia</string>
+    <string name="lx_website_summary">Trouver toutes les dernières infos ici</string>
+    <string name="lx_wiki_title">Wiki</string>
+    <string name="lx_wiki_summary">FAQ, guides et beaucoup plus!</string>
+    <string name="lx_changelog_title">Historique des modifications</string>
+    <string name="lx_changelog_summary">Voir l'historique des modifications des builds LX</string>
+    <string name="lx_source_title">Source</string>
+    <string name="lx_source_summary">LegacyXperia est entièrement open source.\nSource sur github.com/LegacyXperia</string>
+    <string name="lx_donate_title">Donner</string>
+    <string name="lx_donate_summary">Donner à LegacyXperia via PayPal</string>
+
+    <string name="bugreport_title">Rapport de bug</string>
+
+    <string name="lx_bugreport_title">Collecte des journaux</string>
+	<string name="lx_bugreport_summary">Collecte de tous les journaux nécessaires au rapport de bug</string>
+	<string name="report_infosuccess">La collecte des journaux est réussite. Vous pouvez trouver le fichier zip dans le chemin \"LX\" de votre carte SD.</string>
+	<string name="report_infofail">La collecte des journaux a échoué. Veuillez réessayer.</string>
+    <string name="lx_bugtracker_title">Traqueur de bug</string>
+	<string name="lx_bugtracker_summary">Vous pouvez signaler toutes les issues liées à la ROM ici.</string>
+    <string name="ok">OK</string>
+    <string name="system_prop_error">Impossible de lire les propriétés du système</string>
+    <string name="sizer_message_sdnowrite">Impossible d'écrire sur la carte SD</string>
+</resources>
