@@ -40,5 +40,5 @@
 	<string name="lx_bugtracker_summary">Vous pouvez signaler toutes les issues liées à la ROM ici.</string>
     <string name="ok">OK</string>
     <string name="system_prop_error">Impossible de lire les propriétés du système</string>
-    <string name="sizer_message_sdnowrite">Impossible d/'écrire sur la carte SD</string>
+    <string name="sizer_message_sdnowrite">Impossible d\'écrire sur la carte SD</string>
 </resources>
