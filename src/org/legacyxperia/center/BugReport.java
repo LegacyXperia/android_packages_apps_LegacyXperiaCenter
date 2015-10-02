@@ -49,8 +49,9 @@ import android.widget.Toast;
 
 public class BugReport extends Fragment {
 
-    private static final String LOG_TAG = "DeviceInfoSettings";
+    private static final String LOG_TAG = "LegacyXperiaCenter";
 
+    private View view;
     private LinearLayout bugreport;
     private LinearLayout bugtracker;
 
@@ -75,7 +76,7 @@ public class BugReport extends Fragment {
             if (v == bugreport) {
                 bugReport();
             } else if (v == bugtracker) {
-                launchUrl("https://github.com/LegacyXperia/local_manifests/issues?state=open");
+                launchUrl("https://github.com/LegacyXperia/local_manifests/issues");
             }
         }
     };
@@ -84,12 +85,6 @@ public class BugReport extends Fragment {
         final Uri uriUrl = Uri.parse(url);
         final Intent openUrl = new Intent(Intent.ACTION_VIEW, uriUrl);
         getActivity().startActivity(openUrl);
-    }
-
-    private void toast(String text) {
-        // Easy toasts for all!
-        Toast toast = Toast.makeText(getView().getContext(), text, Toast.LENGTH_SHORT);
-        toast.show();
     }
 
     private void bugReport() {
@@ -109,7 +104,7 @@ public class BugReport extends Fragment {
 
             in.close();
         } catch (Exception e) {
-             Toast.makeText(getView().getContext(), getString(R.string.system_prop_error),
+             Toast.makeText(getActivity(), getString(R.string.system_prop_error),
                      Toast.LENGTH_LONG).show();
              e.printStackTrace();
         }
@@ -162,15 +157,15 @@ public class BugReport extends Fragment {
                 // Create system.log and output device info to it
                 FileWriter outstream = new FileWriter(savefile);
                 BufferedWriter save = new BufferedWriter(outstream);
-                save.write("Device: "+mStrDevice+'\n'+"Kernel: "+kernel);
+                save.write("Device: " + mStrDevice + '\n' + "Kernel: " + kernel);
                 save.close();
                 outstream.close();
 
                 // Get system logs and write them to files
-                getLogs("logcat -d -f " + logcat + " *:V\n");
-                getLogs("cat /proc/last_kmsg > " + last_kmsgfile + "\n");
-                getLogs("cat /proc/kmsg > " + kmsgfile + "\n");
-                getLogs("logcat -b radio -d -f " + radio + "\n");
+                getLogs("logcat -d -f " + logcat + " *:V");
+                getLogs("cat /proc/last_kmsg > " + last_kmsgfile);
+                getLogs("cat /proc/kmsg > " + kmsgfile);
+                getLogs("logcat -b radio -d -f " + radio);
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
@@ -181,7 +176,7 @@ public class BugReport extends Fragment {
                 if (savefile.exists() && logcat.exists() && last_kmsg.exists() &&
                         kmsg.exists() && radio.exists()) {
                     boolean zipCreated = zip();
-                    if (zipCreated == true) {
+                    if (zipCreated) {
                         dialog(true);
                     } else {
                         dialog(false);
@@ -191,14 +186,15 @@ public class BugReport extends Fragment {
                 e.printStackTrace();
             }
         } else {
-            toast(getResources().getString(R.string.sizer_message_sdnowrite));
+            Toast.makeText(getActivity(), getString(R.string.sizer_message_sdnowrite),
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
     private short sdAvailable() {
         // Check if SD card is available
         // Taken from developer.android.com
-        short mExternalStorageAvailable = 0;
+        short mExternalStorageAvailable;
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state)) {
             // We can read and write the media
@@ -237,7 +233,8 @@ public class BugReport extends Fragment {
             Log.e(LOG_TAG, "Regex did not match on /proc/version: " + rawKernelVersion);
             return "Unavailable";
         } else if (m.groupCount() < 4) {
-            Log.e(LOG_TAG, "Regex match on /proc/version only returned " + m.groupCount() + " groups");
+            Log.e(LOG_TAG, "Regex match on /proc/version only returned " +
+                    m.groupCount() + " groups");
             return "Unavailable";
         }
         return m.group(1) + " " + m.group(2) + " " + m.group(3);
@@ -256,9 +253,9 @@ public class BugReport extends Fragment {
         String[] source = {systemfile, logfile, last_kmsgfile, kmsgfile, radiofile};
         try {
             ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipfile));
-            for (int i = 0; i < source.length; i++) {
-                String file = source[i].substring(source[i].lastIndexOf("/"), source[i].length());
-                FileInputStream in = new FileInputStream(source[i]);
+            for (String log : source) {
+                String file = log.substring(log.lastIndexOf("/"), log.length());
+                FileInputStream in = new FileInputStream(log);
                 out.putNextEntry(new ZipEntry(file));
                 int len;
                 while((len = in.read(buf)) > 0) {
@@ -279,7 +276,7 @@ public class BugReport extends Fragment {
         try {
             Process process = Runtime.getRuntime().exec("su");
             DataOutputStream os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes(command);
+            os.writeBytes(command + "\n");
             os.writeBytes("exit\n");
             os.flush();
             os.close();
@@ -290,25 +287,18 @@ public class BugReport extends Fragment {
 
     private void dialog (boolean success) {
         final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-        if (success == true){
-            alert.setMessage(R.string.report_infosuccess)
-                 .setPositiveButton(R.string.ok,
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // action for ok
-                                    dialog.cancel();
-                                }
-                            });
+        if (success) {
+            alert.setMessage(R.string.report_infosuccess);
         } else {
-            alert.setMessage(R.string.report_infofail)
-                 .setPositiveButton(R.string.ok,
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // action for ok
-                                    dialog.cancel();
-                                }
-                            });
+            alert.setMessage(R.string.report_infofail);
         }
+        alert.setPositiveButton(R.string.ok,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // action for ok
+                        dialog.cancel();
+                    }
+                });
         alert.show();
     }
 
@@ -316,10 +306,10 @@ public class BugReport extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        bugreport = (LinearLayout) getView().findViewById(R.id.lx_bugreport);
+        bugreport = (LinearLayout) view.findViewById(R.id.lx_bugreport);
         bugreport.setOnClickListener(mActionLayouts);
 
-        bugtracker = (LinearLayout) getView().findViewById(R.id.lx_bugtracker);
+        bugtracker = (LinearLayout) view.findViewById(R.id.lx_bugtracker);
         bugtracker.setOnClickListener(mActionLayouts);
 
         // Request su
@@ -339,8 +329,7 @@ public class BugReport extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.lx_bugreport, container,
-                false);
+        view = inflater.inflate(R.layout.lx_bugreport, container, false);
         return view;
     }
 }

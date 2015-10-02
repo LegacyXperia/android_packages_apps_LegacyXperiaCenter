@@ -28,6 +28,7 @@ import android.widget.LinearLayout;
 
 public class About extends Fragment {
 
+    private View view;
     private LinearLayout website;
     private LinearLayout wiki;
     private LinearLayout changelog;
@@ -38,7 +39,7 @@ public class About extends Fragment {
         @Override
         public void onClick(View v) {
             if (v == website) {
-                launchUrl("http://legacyxperia.github.io");
+                launchUrl("https://legacyxperia.github.io");
             } else if (v == wiki) {
                 launchUrl("https://github.com/LegacyXperia/Wiki/wiki");
             } else if (v == changelog) {
@@ -46,7 +47,7 @@ public class About extends Fragment {
             } else if (v == source) {
                 launchUrl("https://github.com/LegacyXperia");
             } else if (v == donate) {
-                launchUrl("http://forum.xda-developers.com/donatetome.php?u=3839575");
+                launchUrl("https://forum.xda-developers.com/donatetome.php?u=3839575");
             }
         }
     };
@@ -61,27 +62,26 @@ public class About extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        website = (LinearLayout) getView().findViewById(R.id.lx_website);
+        website = (LinearLayout) view.findViewById(R.id.lx_website);
         website.setOnClickListener(mActionLayouts);
 
-        wiki = (LinearLayout) getView().findViewById(R.id.lx_wiki);
+        wiki = (LinearLayout) view.findViewById(R.id.lx_wiki);
         wiki.setOnClickListener(mActionLayouts);
 
-        changelog = (LinearLayout) getView().findViewById(R.id.lx_changelog);
+        changelog = (LinearLayout) view.findViewById(R.id.lx_changelog);
         changelog.setOnClickListener(mActionLayouts);
 
-        source = (LinearLayout) getView().findViewById(R.id.lx_source);
+        source = (LinearLayout) view.findViewById(R.id.lx_source);
         source.setOnClickListener(mActionLayouts);
 
-        donate = (LinearLayout) getView().findViewById(R.id.lx_donate);
+        donate = (LinearLayout) view.findViewById(R.id.lx_donate);
         donate.setOnClickListener(mActionLayouts);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.lx_about, container,
-                false);
+        view = inflater.inflate(R.layout.lx_about, container, false);
         return view;
     }
 }
