@@ -18,7 +18,6 @@
     <string name="app_name">LegacyXperia center</string>
 
     <string name="about_title">About</string>
-
     <string name="lx_website_title">LegacyXperia website</string>
     <string name="lx_website_summary">Find all the latest news here</string>
     <string name="lx_wiki_title">Wiki</string>
@@ -31,7 +30,6 @@
     <string name="lx_donate_summary">Donate to LegacyXperia via PayPal</string>
 
     <string name="bugreport_title">Bug report</string>
-
     <string name="lx_bugreport_title">Collect all logs</string>
     <string name="lx_bugreport_summary">Collect all the needed logs for bug reporting.</string>
     <string name="report_infosuccess">Log collection was successful. You can find the zip file on your SD card in a directory called \"LX\". Please file an issue in the bug tracker and attach the zip.</string>
