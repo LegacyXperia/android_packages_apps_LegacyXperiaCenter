@@ -35,6 +35,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -45,6 +46,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -69,6 +71,7 @@ public class BugReport extends Fragment {
     public String radiofile;
     public String systemfile;
 
+    boolean zipCreated;
     Process superUser;
     private DataOutputStream dataOutput;
     byte[] buf = new byte[1024];
@@ -121,6 +124,8 @@ public class BugReport extends Fragment {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        dialog(zipCreated);
     }
 
     private void bugReport() {
@@ -212,12 +217,7 @@ public class BugReport extends Fragment {
                 // Create zip file
                 if (savefile.exists() && logcat.exists() && last_kmsg.exists() &&
                         kmsg.exists() && radio.exists()) {
-                    boolean zipCreated = zip();
-                    if (zipCreated) {
-                        dialog(true);
-                    } else {
-                        dialog(false);
-                    }
+                    zipCreated = zip();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -357,7 +357,18 @@ public class BugReport extends Fragment {
                         dialog.cancel();
                     }
                 });
-        alert.show();
+        alert.setCancelable(false);
+        AlertDialog alertDialog = alert.create();
+        alertDialog.show();
+        keepDialog(alertDialog);
+    }
+
+    private void keepDialog(Dialog dialog){
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+        layoutParams.copyFrom(dialog.getWindow().getAttributes());
+        layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        dialog.getWindow().setAttributes(layoutParams);
     }
 
     @Override
