@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,8 +57,9 @@ public class BugReport extends Fragment {
     private LinearLayout bugtracker;
 
     private String mStrDevice;
-    private boolean su = false;
     private static final String FILENAME_PROC_VERSION = "/proc/version";
+    private static final String CHECK_MOUNT_STATE =
+            "mount | grep /system | awk '{print $4}' | awk -F\",\" '{print $1}'";
 
     public File path;
     public String zipfile;
@@ -66,15 +68,16 @@ public class BugReport extends Fragment {
     public String kmsgfile;
     public String radiofile;
     public String systemfile;
+
     Process superUser;
-    DataOutputStream ds;
+    private DataOutputStream dataOutput;
     byte[] buf = new byte[1024];
 
     private final View.OnClickListener mActionLayouts = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (v == bugreport) {
-                bugReport();
+                preBugReport();
             } else if (v == bugtracker) {
                 launchUrl("https://github.com/LegacyXperia/local_manifests/issues");
             }
@@ -85,6 +88,39 @@ public class BugReport extends Fragment {
         final Uri uriUrl = Uri.parse(url);
         final Intent openUrl = new Intent(Intent.ACTION_VIEW, uriUrl);
         getActivity().startActivity(openUrl);
+    }
+
+    private void preBugReport() {
+        boolean mountedRO = false;
+
+        try {
+            superUser = Runtime.getRuntime().exec("su");
+            dataOutput = new DataOutputStream(superUser.getOutputStream());
+            if (mountCheck()) {
+                mountedRO = true;
+                Log.d(LOG_TAG, "Mounted RO before");
+                dataOutput.writeBytes("mount -o remount,rw /system" + "\n");
+                dataOutput.flush();
+            } else {
+                Log.d(LOG_TAG, "Mounted RW before");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        bugReport();
+
+        try {
+            if (mountedRO) {
+                dataOutput.writeBytes("mount -o remount,ro /system" + "\n");
+                dataOutput.flush();
+                dataOutput.writeBytes("exit\n");
+                dataOutput.flush();
+            }
+            dataOutput.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void bugReport() {
@@ -163,11 +199,12 @@ public class BugReport extends Fragment {
 
                 // Get system logs and write them to files
                 getLogs("logcat -d -f " + logcat + " *:V");
-                getLogs("cat /proc/last_kmsg > " + last_kmsgfile);
-                getLogs("cat /proc/kmsg > " + kmsgfile);
+                getLogs("timeout -t 5 cat /proc/last_kmsg > " + last_kmsgfile);
+                getLogs("timeout -t 5 cat /proc/kmsg > " + kmsgfile);
                 getLogs("logcat -b radio -d -f " + radio);
+
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(3000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -285,6 +322,27 @@ public class BugReport extends Fragment {
         }
     }
 
+    private boolean mountCheck() {
+        boolean mountedRO = false;
+        try {
+            Process mountCheck = Runtime.getRuntime().exec(
+                    new String[]{"su", "-c", CHECK_MOUNT_STATE});
+            InputStream stdout = mountCheck.getInputStream();
+            String Str = "ro\n";
+            byte[] buffer = new byte[1024];
+            int read = stdout.read(buffer);
+            if (read >= 0) {
+                String out = new String(buffer, 0, read);
+                stdout.close();
+                mountCheck.destroy();
+                mountedRO = out.equalsIgnoreCase(Str);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return mountedRO;
+    }
+
     private void dialog (boolean success) {
         final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         if (success) {
@@ -311,19 +369,6 @@ public class BugReport extends Fragment {
 
         bugtracker = (LinearLayout) view.findViewById(R.id.lx_bugtracker);
         bugtracker.setOnClickListener(mActionLayouts);
-
-        // Request su
-        try {
-            if (!su) {
-                superUser = Runtime.getRuntime().exec("su");
-                ds = new DataOutputStream(superUser.getOutputStream());
-                ds.writeBytes("mount -o remount,rw /system" + "\n");
-                ds.flush();
-                su = true;
-            }
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
