@@ -22,6 +22,8 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src)
 
 LOCAL_PACKAGE_NAME := LegacyXperiaCenter
 
+LOCAL_DEX_PREOPT := false
+
 LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 
 LOCAL_STATIC_JAVA_LIBRARIES := android-support-v4

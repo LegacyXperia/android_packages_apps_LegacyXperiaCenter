@@ -15,14 +15,6 @@
      along with this program. If not, see <http://www.gnu.org/licenses/>.
 -->
 <resources>
-    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:colorPrimary">@color/primaryColor</item>
-        <item name="android:colorPrimaryDark">@color/primaryDarkColor</item>
-    </style>
-
-    <style name="Divider">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">1dp</item>
-        <item name="android:background">?android:attr/listDivider</item>
-    </style>
+    <item name="primaryColor" type="color">#00BCD4</item>
+    <item name="primaryDarkColor" type="color">#0097A7</item>
 </resources>
