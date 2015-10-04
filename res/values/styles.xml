@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-     Copyright (C) 2014 LegacyXperia Project
+     Copyright (C) 2015 LegacyXperia Project
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License version 2
@@ -15,20 +15,30 @@
      along with this program. If not, see <http://www.gnu.org/licenses/>.
 -->
 <resources>
-    <!--
-        Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
-    -->
-    <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
+    <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:windowContentOverlay">@drawable/actionbar_shadow</item>
+        <item name="android:icon">@drawable/actionbar_icon</item>
+        <item name="android:actionBarStyle">@style/AppActionBar</item>
+        <item name="android:textAppearanceMedium">@style/AppTextAppearanceMedium</item>
+        <item name="android:textAppearanceSmall">@style/AppTextAppearanceSmall</item>
     </style>
 
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    <style name="AppActionBar" parent="android:Widget.Holo.ActionBar.Solid">
+        <item name="android:titleTextStyle">@style/AppTitleTextStyle</item>
+        <item name="android:background">@color/primaryColor</item>
+    </style>
+
+    <style name="AppTitleTextStyle" parent="android:TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="AppTextAppearanceMedium" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">@color/primaryTextColor</item>
+    </style>
+
+    <style name="AppTextAppearanceSmall" parent="@android:style/TextAppearance.Small">
+        <item name="android:textColor">@color/secondaryTextColor</item>
     </style>
 </resources>
