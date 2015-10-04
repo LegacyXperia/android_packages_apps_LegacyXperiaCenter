@@ -24,6 +24,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.widget.Toolbar;
 
 public class LegacyXperiaCenter extends FragmentActivity {
 
@@ -70,6 +71,8 @@ public class LegacyXperiaCenter extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.lx_center);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setActionBar(toolbar);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the app.
