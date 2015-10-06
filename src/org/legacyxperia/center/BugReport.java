@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +35,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -44,19 +46,22 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 public class BugReport extends Fragment {
 
-    private static final String LOG_TAG = "DeviceInfoSettings";
+    private static final String LOG_TAG = "LegacyXperiaCenter";
 
+    private View view;
     private LinearLayout bugreport;
     private LinearLayout bugtracker;
 
     private String mStrDevice;
-    private boolean su = false;
     private static final String FILENAME_PROC_VERSION = "/proc/version";
+    private static final String CHECK_MOUNT_STATE =
+            "mount | grep /system | awk '{print $4}' | awk -F\",\" '{print $1}'";
 
     public File path;
     public String zipfile;
@@ -65,17 +70,19 @@ public class BugReport extends Fragment {
     public String kmsgfile;
     public String radiofile;
     public String systemfile;
+
+    boolean zipCreated;
     Process superUser;
-    DataOutputStream ds;
+    private DataOutputStream dataOutput;
     byte[] buf = new byte[1024];
 
     private final View.OnClickListener mActionLayouts = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (v == bugreport) {
-                bugReport();
+                preBugReport();
             } else if (v == bugtracker) {
-                launchUrl("https://github.com/LegacyXperia/local_manifests/issues?state=open");
+                launchUrl("https://github.com/LegacyXperia/local_manifests/issues");
             }
         }
     };
@@ -86,10 +93,39 @@ public class BugReport extends Fragment {
         getActivity().startActivity(openUrl);
     }
 
-    private void toast(String text) {
-        // Easy toasts for all!
-        Toast toast = Toast.makeText(getView().getContext(), text, Toast.LENGTH_SHORT);
-        toast.show();
+    private void preBugReport() {
+        boolean mountedRO = false;
+
+        try {
+            superUser = Runtime.getRuntime().exec("su");
+            dataOutput = new DataOutputStream(superUser.getOutputStream());
+            if (mountCheck()) {
+                mountedRO = true;
+                Log.d(LOG_TAG, "Mounted RO before");
+                dataOutput.writeBytes("mount -o remount,rw /system" + "\n");
+                dataOutput.flush();
+            } else {
+                Log.d(LOG_TAG, "Mounted RW before");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        bugReport();
+
+        try {
+            if (mountedRO) {
+                dataOutput.writeBytes("mount -o remount,ro /system" + "\n");
+                dataOutput.flush();
+                dataOutput.writeBytes("exit\n");
+                dataOutput.flush();
+            }
+            dataOutput.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        dialog(zipCreated);
     }
 
     private void bugReport() {
@@ -109,7 +145,7 @@ public class BugReport extends Fragment {
 
             in.close();
         } catch (Exception e) {
-             Toast.makeText(getView().getContext(), getString(R.string.system_prop_error),
+             Toast.makeText(getActivity(), getString(R.string.system_prop_error),
                      Toast.LENGTH_LONG).show();
              e.printStackTrace();
         }
@@ -162,17 +198,18 @@ public class BugReport extends Fragment {
                 // Create system.log and output device info to it
                 FileWriter outstream = new FileWriter(savefile);
                 BufferedWriter save = new BufferedWriter(outstream);
-                save.write("Device: "+mStrDevice+'\n'+"Kernel: "+kernel);
+                save.write("Device: " + mStrDevice + '\n' + "Kernel: " + kernel);
                 save.close();
                 outstream.close();
 
                 // Get system logs and write them to files
-                getLogs("logcat -d -f " + logcat + " *:V\n");
-                getLogs("cat /proc/last_kmsg > " + last_kmsgfile + "\n");
-                getLogs("cat /proc/kmsg > " + kmsgfile + "\n");
-                getLogs("logcat -b radio -d -f " + radio + "\n");
+                getLogs("logcat -d -f " + logcat + " *:V");
+                getLogs("timeout -t 5 cat /proc/last_kmsg > " + last_kmsgfile);
+                getLogs("timeout -t 5 cat /proc/kmsg > " + kmsgfile);
+                getLogs("logcat -b radio -d -f " + radio);
+
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(3000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -180,25 +217,21 @@ public class BugReport extends Fragment {
                 // Create zip file
                 if (savefile.exists() && logcat.exists() && last_kmsg.exists() &&
                         kmsg.exists() && radio.exists()) {
-                    boolean zipCreated = zip();
-                    if (zipCreated == true) {
-                        dialog(true);
-                    } else {
-                        dialog(false);
-                    }
+                    zipCreated = zip();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
-            toast(getResources().getString(R.string.sizer_message_sdnowrite));
+            Toast.makeText(getActivity(), getString(R.string.sizer_message_sdnowrite),
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
     private short sdAvailable() {
         // Check if SD card is available
         // Taken from developer.android.com
-        short mExternalStorageAvailable = 0;
+        short mExternalStorageAvailable;
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state)) {
             // We can read and write the media
@@ -237,7 +270,8 @@ public class BugReport extends Fragment {
             Log.e(LOG_TAG, "Regex did not match on /proc/version: " + rawKernelVersion);
             return "Unavailable";
         } else if (m.groupCount() < 4) {
-            Log.e(LOG_TAG, "Regex match on /proc/version only returned " + m.groupCount() + " groups");
+            Log.e(LOG_TAG, "Regex match on /proc/version only returned " +
+                    m.groupCount() + " groups");
             return "Unavailable";
         }
         return m.group(1) + " " + m.group(2) + " " + m.group(3);
@@ -256,9 +290,9 @@ public class BugReport extends Fragment {
         String[] source = {systemfile, logfile, last_kmsgfile, kmsgfile, radiofile};
         try {
             ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipfile));
-            for (int i = 0; i < source.length; i++) {
-                String file = source[i].substring(source[i].lastIndexOf("/"), source[i].length());
-                FileInputStream in = new FileInputStream(source[i]);
+            for (String log : source) {
+                String file = log.substring(log.lastIndexOf("/"), log.length());
+                FileInputStream in = new FileInputStream(log);
                 out.putNextEntry(new ZipEntry(file));
                 int len;
                 while((len = in.read(buf)) > 0) {
@@ -279,7 +313,7 @@ public class BugReport extends Fragment {
         try {
             Process process = Runtime.getRuntime().exec("su");
             DataOutputStream os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes(command);
+            os.writeBytes(command + "\n");
             os.writeBytes("exit\n");
             os.flush();
             os.close();
@@ -288,59 +322,70 @@ public class BugReport extends Fragment {
         }
     }
 
+    private boolean mountCheck() {
+        boolean mountedRO = false;
+        try {
+            Process mountCheck = Runtime.getRuntime().exec(
+                    new String[]{"su", "-c", CHECK_MOUNT_STATE});
+            InputStream stdout = mountCheck.getInputStream();
+            String Str = "ro\n";
+            byte[] buffer = new byte[1024];
+            int read = stdout.read(buffer);
+            if (read >= 0) {
+                String out = new String(buffer, 0, read);
+                stdout.close();
+                mountCheck.destroy();
+                mountedRO = out.equalsIgnoreCase(Str);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return mountedRO;
+    }
+
     private void dialog (boolean success) {
         final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-        if (success == true){
-            alert.setMessage(R.string.report_infosuccess)
-                 .setPositiveButton(R.string.ok,
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // action for ok
-                                    dialog.cancel();
-                                }
-                            });
+        if (success) {
+            alert.setMessage(R.string.report_infosuccess);
         } else {
-            alert.setMessage(R.string.report_infofail)
-                 .setPositiveButton(R.string.ok,
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // action for ok
-                                    dialog.cancel();
-                                }
-                            });
+            alert.setMessage(R.string.report_infofail);
         }
-        alert.show();
+        alert.setPositiveButton(R.string.ok,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // action for ok
+                        dialog.cancel();
+                    }
+                });
+        alert.setCancelable(false);
+        AlertDialog alertDialog = alert.create();
+        alertDialog.show();
+        keepDialog(alertDialog);
+    }
+
+    private void keepDialog(Dialog dialog){
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+        layoutParams.copyFrom(dialog.getWindow().getAttributes());
+        layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        dialog.getWindow().setAttributes(layoutParams);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        bugreport = (LinearLayout) getView().findViewById(R.id.lx_bugreport);
+        bugreport = (LinearLayout) view.findViewById(R.id.lx_bugreport);
         bugreport.setOnClickListener(mActionLayouts);
 
-        bugtracker = (LinearLayout) getView().findViewById(R.id.lx_bugtracker);
+        bugtracker = (LinearLayout) view.findViewById(R.id.lx_bugtracker);
         bugtracker.setOnClickListener(mActionLayouts);
-
-        // Request su
-        try {
-            if (!su) {
-                superUser = Runtime.getRuntime().exec("su");
-                ds = new DataOutputStream(superUser.getOutputStream());
-                ds.writeBytes("mount -o remount,rw /system" + "\n");
-                ds.flush();
-                su = true;
-            }
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.lx_bugreport, container,
-                false);
+        view = inflater.inflate(R.layout.lx_bugreport, container, false);
         return view;
     }
 }

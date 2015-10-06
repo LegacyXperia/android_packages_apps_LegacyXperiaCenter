@@ -1,9 +1,11 @@
-gen/*
 bin/*
+gen/*
+libs/*
 .project
 .classpath
 .settings/*
 proguard.cfg
 default.properties
+project.properties
 lint.xml
 proguard-project.txt
