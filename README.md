@@ -1,4 +1,4 @@
 LegacyXperia Center
 ===================
 
-This application provides some useful things to LX users.
+This application provides some useful options to LX users.
