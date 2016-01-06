@@ -169,8 +169,8 @@ public class BugReport extends Fragment {
 
                 // Get system logs and write them to files
                 getLogs("logcat -d -f " + logcat + " *:V");
-                getLogs("timeout -t 5 cat /proc/last_kmsg > " + last_kmsgfile);
-                getLogs("timeout -t 5 cat /proc/kmsg > " + kmsgfile);
+                getLogs("timeout 5 cat /proc/last_kmsg > " + last_kmsgfile);
+                getLogs("timeout 5 cat /proc/kmsg > " + kmsgfile);
                 getLogs("logcat -b radio -d -f " + radio);
 
                 try {
