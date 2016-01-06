@@ -27,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,8 +59,6 @@ public class BugReport extends Fragment {
 
     private String mStrDevice;
     private static final String FILENAME_PROC_VERSION = "/proc/version";
-    private static final String CHECK_MOUNT_STATE =
-            "mount | grep /system | awk '{print $4}' | awk -F\",\" '{print $1}'";
 
     public File path;
     public String zipfile;
@@ -72,8 +69,6 @@ public class BugReport extends Fragment {
     public String systemfile;
 
     boolean zipCreated;
-    Process superUser;
-    private DataOutputStream dataOutput;
     byte[] buf = new byte[1024];
 
     private final View.OnClickListener mActionLayouts = new View.OnClickListener() {
@@ -94,37 +89,7 @@ public class BugReport extends Fragment {
     }
 
     private void preBugReport() {
-        boolean mountedRO = false;
-
-        try {
-            superUser = Runtime.getRuntime().exec("su");
-            dataOutput = new DataOutputStream(superUser.getOutputStream());
-            if (mountCheck()) {
-                mountedRO = true;
-                Log.d(LOG_TAG, "Mounted RO before");
-                dataOutput.writeBytes("mount -o remount,rw /system" + "\n");
-                dataOutput.flush();
-            } else {
-                Log.d(LOG_TAG, "Mounted RW before");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         bugReport();
-
-        try {
-            if (mountedRO) {
-                dataOutput.writeBytes("mount -o remount,ro /system" + "\n");
-                dataOutput.flush();
-                dataOutput.writeBytes("exit\n");
-                dataOutput.flush();
-            }
-            dataOutput.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         dialog(zipCreated);
     }
 
@@ -291,7 +256,7 @@ public class BugReport extends Fragment {
         try {
             ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipfile));
             for (String log : source) {
-                String file = log.substring(log.lastIndexOf("/"), log.length());
+                String file = log.substring(log.lastIndexOf("/") + 1, log.length());
                 FileInputStream in = new FileInputStream(log);
                 out.putNextEntry(new ZipEntry(file));
                 int len;
@@ -320,27 +285,6 @@ public class BugReport extends Fragment {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private boolean mountCheck() {
-        boolean mountedRO = false;
-        try {
-            Process mountCheck = Runtime.getRuntime().exec(
-                    new String[]{"su", "-c", CHECK_MOUNT_STATE});
-            InputStream stdout = mountCheck.getInputStream();
-            String Str = "ro\n";
-            byte[] buffer = new byte[1024];
-            int read = stdout.read(buffer);
-            if (read >= 0) {
-                String out = new String(buffer, 0, read);
-                stdout.close();
-                mountCheck.destroy();
-                mountedRO = out.equalsIgnoreCase(Str);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return mountedRO;
     }
 
     private void dialog (boolean success) {
