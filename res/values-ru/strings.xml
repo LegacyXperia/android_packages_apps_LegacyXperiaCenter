@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2014 LegacyXperia Project
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License version 2
+     as published by the Free Software Foundation.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+<resources>
+    <string name="app_name">LegacyXperia центр</string>
+
+    <string name="about_title">О проекте</string>
+    <string name="lx_website_title">Веб-сайт LegacyXperia</string>
+    <string name="lx_website_summary">Find all the latest news here</string>
+    <string name="lx_wiki_title">Вики</string>
+    <string name="lx_wiki_summary">FAQ, гайды и многое другое!</string>
+    <string name="lx_changelog_title">Список изменений</string>
+    <string name="lx_changelog_summary">Посмотреть список изменений сборок LX</string>
+    <string name="lx_source_title">Исходники</string>
+    <string name="lx_source_summary">LegacyXperia полностью open source проект.\nИсходники на github.com/LegacyXperia</string>
+    <string name="lx_donate_title">Материальная поддержка</string>
+    <string name="lx_donate_summary">Материально поддержать LegacyXperia через PayPal</string>
+
+    <string name="bugreport_title">Баг-репорт</string>
+    <string name="lx_bugreport_title">Собрать все логи</string>
+    <string name="lx_bugreport_summary">Собрать все необходимые логи для баг-репорта.</string>
+    <string name="report_infosuccess">Log collection was successful. You can find the zip file on your SD card in a directory called \"LX\". Please file an issue in the bug tracker and attach the zip.</string>
+    <string name="report_infofail">Log collection failed, please try again.</string>
+    <string name="lx_bugtracker_title">Баг-трекер</string>
+    <string name="lx_bugtracker_summary">You can report any issues regarding the ROM here.</string>
+    <string name="ok">ОК</string>
+    <string name="system_prop_error">Cannot read system properties</string>
+    <string name="sizer_message_sdnowrite">Невозможно записать на SD-карту</string>
+</resources>
